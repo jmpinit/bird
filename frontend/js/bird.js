@@ -3,6 +3,43 @@
 bird = (function () {
     var exports = {};
 
+    function getCentroid (mesh) {
+        mesh.geometry.computeBoundingBox();
+        boundingBox = mesh.geometry.boundingBox;
+
+        var x0 = boundingBox.min.x;
+        var x1 = boundingBox.max.x;
+        var y0 = boundingBox.min.y;
+        var y1 = boundingBox.max.y;
+        var z0 = boundingBox.min.z;
+        var z1 = boundingBox.max.z;
+
+
+        var bWidth = ( x0 > x1 ) ? x0 - x1 : x1 - x0;
+        var bHeight = ( y0 > y1 ) ? y0 - y1 : y1 - y0;
+        var bDepth = ( z0 > z1 ) ? z0 - z1 : z1 - z0;
+
+        var centroidX = x0 + ( bWidth / 2 ) + mesh.position.x;
+        var centroidY = y0 + ( bHeight / 2 )+ mesh.position.y;
+        var centroidZ = z0 + ( bDepth / 2 ) + mesh.position.z;
+
+        return { x : centroidX, y : centroidY, z : centroidZ };
+
+    }
+
+    function extractRotation (node, name) {
+        var rotstring = $(node).attr(name);
+
+        if (rotstring === undefined) {
+            return 0;
+        } else if (rotstring[0] !== "R") {
+            throw "invalid rotation", rotstring;
+        } else {
+            var degrees = parseInt(rotstring.substring(1, rotstring.length));
+            return 2 * Math.PI * (degrees / 360.0);
+        }
+    }
+
     function extractInt (node, name) {
         return parseInt($(node).attr(name));
     }
@@ -129,6 +166,25 @@ bird = (function () {
         }
     }
 
+    function Text (node) {
+        this.text = $(node).text();
+
+        this.size = extractFloat(node, "size");
+
+        this.position = {
+            x: extractFloat(node, "x"),
+            y: extractFloat(node, "y")
+        }
+    }
+
+    Text.prototype = {
+        render: function (ctx) {
+            ctx.font = this.size + "px Arial";
+            ctx.fillStyle = "rgba(255, 0, 0, 255)";
+            ctx.fillText(this.text, this.position.x, this.position.y);
+        }
+    }
+
 
     function Package (node) {
         this.name = $(node).attr("name");
@@ -150,6 +206,8 @@ bird = (function () {
                     return new Pad(node);
                 case "smd":
                     return new SMD(node);
+                case "text":
+                    return new Text(node);
                 case "package":
                     return _.map($(node).children(), function(child) {
                         return Package.parse(child);
@@ -195,8 +253,13 @@ bird = (function () {
             var texture = new THREE.Texture(canvas);
             texture.needsUpdate = true;
 
-            var material = new THREE.MeshBasicMaterial( {map: texture, side:THREE.DoubleSide } );
-            material.transparent = true;
+            var material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side:THREE.DoubleSide,
+                transparent: true,
+                depthWrite: false,
+                depthTest: false 
+            });
 
             return new THREE.Mesh(
                 new THREE.PlaneGeometry(10, 10),
@@ -211,25 +274,93 @@ bird = (function () {
 
         var board = new THREE.Object3D();
 
-        var groups = _.pluck($doc.find("packages"), "children");
-        var packages = _.flatten(
-            _.map(groups, function (group) {
-                _.map(group, function (node) {
-                    var package = new Package(node);
-
-                    package.mesh.rotation.x = 2 * Math.PI * Math.random();
-                    package.mesh.rotation.y = 2 * Math.PI * Math.random();
-                    package.mesh.rotation.z = 2 * Math.PI * Math.random();
-
-                    var d = 20;
-                    package.mesh.position.x = d * Math.random() - d/2;
-                    package.mesh.position.y = d * Math.random() - d/2;
-                    package.mesh.position.z = d * Math.random() - d/2;
-
-                    board.add(package.mesh);
+        var packages = (function () {
+            var groups = _.pluck($doc.find("packages"), "children");
+            var packageList = _.flatten(
+                _.map(groups, function (group) {
+                    return _.map(group, function (node) {
+                        return new Package(node);
+                    })
                 })
+            );
+            return _.object(_.pluck(packageList, "name"), packageList);
+        })();
+
+        var elements = (function () {
+            var groups = _.pluck($doc.find("elements"), "children");
+
+            var elements = _.flatten(
+                _.map(groups, function (group) {
+                    return _.map(group, function (node) {
+                        var package = packages[$(node).attr("package")];
+                        
+                        if (package === undefined) {
+                            console.log("unknown package", node);
+                        } else {
+                            var mesh = package.mesh.clone();
+
+                            var scale = 4;
+                            mesh.position.x = extractFloat(node, "x") / scale;
+                            mesh.position.y = extractFloat(node, "y") / scale;
+
+                            var explode = 2;
+                            package.mesh.position.z = explode * Math.random() - explode / 2;
+
+                            mesh.rotation.z = extractRotation(node, "rot");
+                        }
+
+                        return mesh;
+                    })
+                })
+            );
+
+            return _.filter(elements, function (el) { return el !== undefined && el !== null; });
+        })();
+
+        _.each(elements, function (el) {
+            board.add(el);
+        });
+
+        // signals
+        var signalMaterial = new THREE.LineBasicMaterial({
+            color: 0x000000
+        });
+
+        _.each($doc.find("signal"), function (signal) {
+            _.each($(signal).find("wire"), function (wireNode) {
+                var wire = new Wire(wireNode);
+
+                var scale = 0.25;
+                var off = { x: -4.8, y: -2.6 };
+                var geometry = new THREE.Geometry();
+                geometry.vertices.push(new THREE.Vector3(off.x + scale * wire.start.x, off.y + scale * wire.start.y, 0));
+                geometry.vertices.push(new THREE.Vector3(off.x + scale * wire.end.x, off.y + scale * wire.end.y, 0));
+
+                var line = new THREE.Line(geometry, signalMaterial);
+
+                scene.add(line);
             })
-        );
+        });
+
+        // center board
+        var meshes = _.filter(board.children, function (child) {
+            return child.geometry !== undefined;
+        });
+
+        var centroids = _.map(meshes, function (child) {
+            return getCentroid(child);
+        });
+
+        var boardCentroid = _.reduce(centroids, function (memo, centroid) {
+            memo.x += centroid.x / centroids.length;
+            memo.y += centroid.y / centroids.length;
+            memo.z += centroid.z / centroids.length;
+            return memo;
+        }, { x: 0, y: 0, z: 0});
+
+        board.position.x -= boardCentroid.x / 2;
+        board.position.y -= boardCentroid.y / 2;
+        board.position.z -= boardCentroid.z / 2;
 
         return board;
     }

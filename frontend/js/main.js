@@ -2,11 +2,11 @@ var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 
 var renderer = new THREE.WebGLRenderer();
-renderer.setClearColor( 0xffc000, 1 );
+renderer.setClearColor( 0xcccccc, 1 );
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-var distance = 30;
+var distance = 20;
 camera.position.z = distance;
 var origin = new THREE.Vector3(0, 0, 0);
 var t = 0;
