@@ -25,10 +25,11 @@ function render() {
 render();
 
 dragbox.ondata = function(xml) {
+    for (var i = scene.children.length; i >= 0; i--)
+        scene.remove(scene.children[i]);
+
     var mesh = bird.render(xml);
-    console.log("board rendered");
     scene.add(mesh);
-    console.log("mesh added");
 };
 
 dragbox.source($("#holder")[0]);
