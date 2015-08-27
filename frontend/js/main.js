@@ -3,7 +3,7 @@ var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHe
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setClearColor( 0xcccccc, 1 );
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild( renderer.domElement );
 
 var distance = 20;
