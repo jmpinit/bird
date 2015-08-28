@@ -12,12 +12,13 @@ var origin = new THREE.Vector3(0, 0, 0);
 var t = 0;
 
 function render() {
-    camera.position.x = distance * Math.cos(t);
-    camera.position.z = distance * Math.sin(t);
+    var rot = 1/16 * 2 * Math.PI * (Math.sin(t) + 3);
+    camera.position.x = distance * Math.cos(rot);
+    camera.position.z = distance * Math.sin(rot);
 
     camera.lookAt(origin);
 
-    t += 0.01;
+    t += 0.1;
 
     requestAnimationFrame(render);
     renderer.render(scene, camera);
