@@ -32,11 +32,15 @@ bird = (function () {
 
         if (rotstring === undefined) {
             return 0;
-        } else if (rotstring[0] !== "R") {
-            throw "invalid rotation", rotstring;
         } else {
-            var degrees = parseInt(rotstring.substring(1, rotstring.length));
-            return 2 * Math.PI * (degrees / 360.0);
+            var parts = rotstring.match(/^M?R(\d\d?\d?)/);
+        
+            if (parts.length !== 2) {
+                console.error("invalid rotation", rotstring, node);
+            } else {
+                var degrees = parseInt(parts[1]);
+                return 2 * Math.PI * (degrees / 360.0);
+            }
         }
     }
 
