@@ -66,7 +66,7 @@ bird = (function () {
 
     Wire.prototype = {
         render: function (ctx) {
-            ctx.strokeStyle = "rgb(0, 0, 0)";
+            ctx.strokeStyle = "rgb(198, 149, 0)";
             ctx.beginPath();
             ctx.moveTo(this.start.x, this.start.y);
             ctx.lineTo(this.end.x, this.end.y);
@@ -108,7 +108,7 @@ bird = (function () {
 
     Rectangle.prototype = {
         render: function (ctx) {
-            ctx.strokeStyle = "rgb(128, 128, 128)";
+            ctx.strokeStyle = "rgb(155, 117, 0)";
             ctx.beginPath();
             ctx.moveTo(this.upperLeft.x, this.upperLeft.y);
             ctx.lineTo(this.lowerRight.x, this.upperLeft.y);
@@ -159,7 +159,7 @@ bird = (function () {
                 y: upperLeft.y + this.size.y
             };
 
-            ctx.strokeStyle = "rgba(0, 0, 255, 255)";
+            ctx.strokeStyle = "rgba(255, 217, 100, 255)";
             ctx.beginPath();
             ctx.moveTo(upperLeft.x, upperLeft.y);
             ctx.lineTo(lowerRight.x, upperLeft.y);
