@@ -48,5 +48,15 @@ define(function(require) {
         xmlhttp.send();
     }
 
+    exports.getJSON = function (url, callback) {
+        exports.getFile(url, function (err, data) {
+            try {
+                callback(null, JSON.parse(data));
+            } catch (e) {
+                callback(e);
+            }
+        });
+    }
+
     return exports;
 });
