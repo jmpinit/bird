@@ -1,0 +1,16 @@
+{
+  "name": "bird-parser",
+  "version": "0.0.1",
+  "author": "Owen Trueblood <owen@owentrueblood.me>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmptable/bird"
+  },
+  "scripts": {
+      "test": "node tests.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "requirejs": "^2.1.20"
+  }
+}
