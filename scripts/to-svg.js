@@ -227,7 +227,7 @@ define(function(require) {
 
         // add decoration
 
-        /*var decorationGroup = document.createElementNS(xmlns, "g");
+        var decorationGroup = document.createElementNS(xmlns, "g");
         addClass(decorationGroup, "decoration");
         boardGroup.appendChild(decorationGroup);
 
@@ -239,9 +239,9 @@ define(function(require) {
                     rotate(use, decoration.rotation);
                 }
 
-                signalsGroup.appendChild(el);
+                decorationGroup.appendChild(el);
             }
-        });*/
+        });
 
         // styles
         var style = document.createElementNS(xmlns, "style");
