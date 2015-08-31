@@ -14,10 +14,19 @@ define(function(require) {
         element.setAttribute("transform", prev + " " + translation);
     }
 
-    function rotate (element, degrees) {
+    function rotate (element, degrees, x, y) {
+        var x = x || 0;
+        var y = y || 0;
+
         var radians = 360 * degrees / (2 * Math.PI);
         var prev = element.getAttribute("transform") || "";
-        var rotation = "rotate(" + radians + ")";
+
+        if (!(x == 0 && y == 0)) {
+            var rotation = "rotate(" + radians + " " + x + " " + y + ")";
+        } else {
+            var rotation = "rotate(" + radians + ")";
+        }
+
         element.setAttribute("transform", prev + " " + rotation);
     }
 
@@ -109,6 +118,15 @@ define(function(require) {
                 el.setAttribute("r", entity.radius);
 
                 break;
+            case "via":
+                el = document.createElementNS(xmlns, 'circle');
+
+                el.setAttribute("cx", entity.position.x);
+                el.setAttribute("cy", entity.position.y);
+
+                el.setAttribute("r", entity.radius || 0.1);
+
+                break;
             case "smd":
                 el = document.createElementNS(xmlns, 'rect');
 
@@ -116,6 +134,10 @@ define(function(require) {
                 el.setAttribute("y", entity.position.y);
                 el.setAttribute("width", entity.width);
                 el.setAttribute("height", entity.height);
+
+                if (entity.rotation) {
+                    rotate(el, entity.rotation, entity.position.x + entity.width / 2, entity.position.y + entity.height / 2);
+                }
 
                 // TODO
                 //el.setAttribute("rx", entity.roundness);

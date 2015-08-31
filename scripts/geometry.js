@@ -135,7 +135,7 @@ define(function(require) {
     exports.Smd = function (units, node) {
         this.type = "smd";
 
-        var smd = util.objectifyNode(node, ["x", "y", "dx", "dy", "roundness"]);
+        var smd = util.objectifyNode(node, ["x", "y", "dx", "dy", "rot", "roundness"]);
 
         this.width = units.toMetric(smd.dx);
         this.height = units.toMetric(smd.dy);
